@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, TeamViewSet, ActivityViewSet, WorkoutViewSet, LeaderboardViewSet, api_root
+from .views import UserViewSet, TeamViewSet, ActivityViewSet, WorkoutViewSet, LeaderboardViewSet
+from django.http import JsonResponse
+import os
+
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -23,6 +26,20 @@ router.register(r'teams', TeamViewSet)
 router.register(r'activities', ActivityViewSet)
 router.register(r'workouts', WorkoutViewSet)
 router.register(r'leaderboard', LeaderboardViewSet)
+
+
+# Custom API root view to show the correct codespace URL
+def api_root(request):
+    codespace_name = os.environ.get('CODESPACE_NAME', None)
+    if codespace_name:
+        api_url = f"https://{codespace_name}-8000.app.github.dev/api/"
+    else:
+        api_url = "http://localhost:8000/api/"
+    return JsonResponse({
+        "message": "Welcome to the Octofit Tracker API!",
+        "api_base_url": api_url,
+        "example_activities_url": api_url + "activities/"
+    })
 
 urlpatterns = [
     path('', api_root, name='api-root'),
